@@ -1,0 +1,58 @@
+/* Estilos específicos para el sistema de taller de motos */
+
+/* Animación de pulso para elementos decorativos */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Estilos para el contenedor de login */
+.login-container {
+  min-height: 100vh;
+  display: flex;
+}
+
+.left-side {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #ff8c42 0%, #ff6b1a 50%, #e55a00 100%);
+}
+
+.right-side {
+  flex: 1;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #000;
+}
+
+/* Estilos para el dashboard */
+.dashboard-container {
+  background-color: #f5f5f5;
+  min-height: 100vh;
+}
+
+/* Estilos para las tarjetas de estadísticas */
+.stats-card {
+  transition: all 0.3s ease;
+}
+
+.stats-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
