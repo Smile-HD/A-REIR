@@ -1,0 +1,314 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum EstadoProforma {
+  PENDIENTE
+  APROBADA
+  RECHAZADA
+  COMPLETADA
+
+  @@map("ESTADO_PROFORMA")
+}
+
+enum EstadoOrden {
+  ABIERTA
+  EN_PROCESO
+  FINALIZADA
+  CANCELADA
+
+  @@map("estado_orden")
+}
+
+enum EstadoPago {
+  PENDIENTE
+  PAGADO
+  CANCELADO
+
+  @@map("estado_pago")
+}
+
+model Rol {
+  id       Int          @id @default(autoincrement()) @map("ID")
+  nombre   String       @map("NOMBRE") @db.VarChar(100)
+  permisos RolPermiso[]
+  usuarios Usuario[]
+
+  @@map("ROL")
+}
+
+model Permiso {
+  id     Int          @id @default(autoincrement()) @map("ID")
+  nombre String       @unique @map("NOMBRE") @db.VarChar(100)
+  roles  RolPermiso[]
+
+  @@map("PERMISO")
+}
+
+model RolPermiso {
+  idPermiso Int     @map("ID_PERMISO")
+  idRol     Int     @map("ID_ROL")
+  permiso   Permiso @relation(fields: [idPermiso], references: [id], onDelete: Cascade)
+  rol       Rol     @relation(fields: [idRol], references: [id], onDelete: Cascade)
+
+  @@id([idPermiso, idRol])
+  @@map("ROL_PERMISO")
+}
+
+model Usuario {
+  id         Int       @id @default(autoincrement()) @map("ID")
+  username   String    @unique @map("USERNAME") @db.VarChar(30)
+  password   String    @map("PASSWORD") @db.VarChar(255)
+  email      String    @unique @map("EMAIL") @db.VarChar(30)
+  idRol      Int?      @map("ID_ROL")
+  empleadoCi Int?      @unique @map("EMPLEADO_CI")
+  
+  empleado       Empleado?       @relation(fields: [empleadoCi], references: [ci])
+  rol            Rol?            @relation(fields: [idRol], references: [id], onDelete: Cascade)
+  ordenesTrabajo OrdenTrabajo[]
+  bitacoras      Bitacora[]
+
+  @@map("USUARIO")
+}
+
+model Bitacora {
+  id          BigInt   @id @default(autoincrement()) @map("ID_BITACORA")
+  usuarioId   Int      @map("USUARIO_ID")
+  descripcion String   @map("DESCRIPCION") @db.Text
+  fechaHora   DateTime @default(now()) @map("FECHA_HORA") @db.Timestamp()
+  ipOrigen    String?  @map("IP_ORIGEN") @db.VarChar(45)
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@map("BITACORA")
+}
+
+model Empleado {
+  ci        Int      @id @map("CI")
+  nombre    String   @db.VarChar(50) @map("NOMBRE")
+  apellidos String   @db.VarChar(50) @map("APELLIDOS")
+  telefono  String   @db.VarChar(15) @map("TELEFONO")
+  direccion String   @db.VarChar(100) @map("DIRECCION")
+
+  diagnosticos     Diagnostico[]
+  horarioEmpleados HorarioEmpleado[]
+  usuario          Usuario?
+  ordenesTrabajo   OrdenTrabajo[]
+
+  @@map("EMPLEADO")
+}
+
+model MarcaMoto {
+  id     Int    @id @default(autoincrement()) @map("ID")
+  nombre String @map("NOMBRE")
+  motos  Moto[]
+
+  @@map("MARCA_MOTO")
+}
+
+model Moto {
+  placa        String        @id @map("PLACA") @db.VarChar(10)
+  modelo       String        @map("MODELO")
+  anio         Int           @map("AÑO") @db.SmallInt
+  chasis       String?       @unique @map("CHASIS")
+  marcaId      Int           @map("MARCA_ID")
+  diagnosticos Diagnostico[]
+  marca        MarcaMoto     @relation(fields: [marcaId], references: [id])
+
+  @@map("MOTO")
+}
+
+model Diagnostico {
+  nro        BigInt               @id @default(autoincrement()) @map("NRO")
+  fecha      DateTime             @map("FECHA") @db.Date
+  hora       DateTime             @map("HORA") @db.Time(6)
+  placaMoto  String               @map("PLACA_MOTO") @db.VarChar(10)
+  empleadoCi Int                  @map("EMPLEADO_CI")
+  detalles   DetalleDiagnostico[]
+  proforma   Proforma?
+  empleado   Empleado             @relation(fields: [empleadoCi], references: [ci])
+  moto       Moto                 @relation(fields: [placaMoto], references: [placa])
+
+  @@unique([placaMoto, fecha, hora], name: "UQ_DIAG_MOTO_MOMENTO")
+  @@map("DIAGNOSTICO")
+}
+
+model DetalleDiagnostico {
+  id            BigInt      @default(autoincrement()) @map("ID")
+  diagnosticoId BigInt      @map("DIAGNOSTICO_ID")
+  descripcion   String      @map("DESCRIPCION")
+  diagnostico   Diagnostico @relation(fields: [diagnosticoId], references: [nro], onDelete: Cascade)
+
+  @@id([id, diagnosticoId])
+  @@map("DETALLE_DIAGNOSTICO")
+}
+
+model Cliente {
+  ci        Int        @id @map("CI")
+  nombre    String     @map("NOMBRE")
+  apellidos String     @map("APELLIDOS")
+  telefono  String     @map("TELEFONO")
+  direccion String     @map("DIRECCION")
+  proformas Proforma[]
+
+  @@map("CLIENTE")
+}
+
+model Categoria {
+  id        Int        @id @default(autoincrement()) @map("ID")
+  nombre    String     @map("NOMBRE") @db.VarChar(80)
+  servicios Servicio[]
+
+  @@map("CATEGORIA")
+}
+
+model Servicio {
+  id              Int               @id @default(autoincrement()) @map("ID")
+  descripcion     String            @map("DESCRIPCION") @db.VarChar(200)
+  categoriaId     Int               @map("CATEGORIA_ID")
+  categoria       Categoria         @relation(fields: [categoriaId], references: [id], onUpdate: Cascade, onDelete: Restrict)
+  detallesProforma DetalleProforma[]
+
+  @@map("SERVICIO")
+}
+
+model Proforma {
+  id             BigInt              @id @default(autoincrement()) @map("ID")
+  fecha          DateTime            @map("FECHA") @db.Date
+  estado         EstadoProforma      @default(PENDIENTE) @map("ESTADO")
+  total          Decimal             @default(0) @map("TOTAL") @db.Decimal(12, 2)
+  clienteCi      Int                 @map("CLIENTE_CI")
+  diagnosticoId  BigInt?             @unique @map("DIAGNOSTICO_ID")
+  cliente        Cliente             @relation(fields: [clienteCi], references: [ci], onUpdate: Cascade, onDelete: Restrict)
+  diagnostico    Diagnostico?        @relation(fields: [diagnosticoId], references: [nro], onUpdate: Cascade, onDelete: SetNull)
+  detalles       DetalleProforma[]
+  repuestos      ProformaRepuesto[]
+
+  @@map("PROFORMA")
+}
+
+model ProformaRepuesto {
+  proformaId BigInt   @map("PROFORMA_ID")
+  nombre     String   @map("NOMBRE") @db.VarChar(100)
+  proforma   Proforma @relation(fields: [proformaId], references: [id], onDelete: Cascade)
+
+  @@id([proformaId, nombre])
+  @@map("PROFORMA_REPUESTO")
+}
+
+model DetalleProforma {
+  id          Int      @id @default(autoincrement()) @map("ID")
+  proformaId  BigInt   @map("PROFORMA_ID")
+  servicioId  Int?     @map("SERVICIO_ID")
+  descripcion String   @db.VarChar(100) @map("DESCRIPCION")
+  cantidad    Decimal  @db.Decimal(12, 2) @map("CANTIDAD")
+  precioUnit  Decimal  @db.Decimal(12, 2) @map("PRECIO_UNIT")
+
+  proforma       Proforma       @relation(fields: [proformaId], references: [id], onDelete: Cascade)
+  servicio       Servicio?      @relation(fields: [servicioId], references: [id])
+  ordenesTrabajo OrdenTrabajo[]
+
+  @@map("DETALLE_PROFORMA")
+}
+
+model Horario {
+  id         Int      @id @default(autoincrement()) @map("ID")
+  horaInicio DateTime @db.Time @map("HORA_INICIO")
+  horaFin    DateTime @db.Time @map("HORA_FIN")
+
+  horarioEmpleados HorarioEmpleado[]
+
+  @@map("HORARIO")
+}
+
+model HorarioEmpleado {
+  empleadoCi Int      @map("EMPLEADO_CI")
+  horarioId  Int      @map("HORARIO_ID")
+  fecha      DateTime @db.Date @map("FECHA")
+
+  empleado Empleado @relation(fields: [empleadoCi], references: [ci], onUpdate: Cascade, onDelete: Cascade)
+  horario  Horario  @relation(fields: [horarioId], references: [id], onUpdate: Cascade, onDelete: Restrict)
+
+  @@id([empleadoCi, horarioId])
+  @@map("HORARIO_EMPLEADO")
+}
+
+model OrdenTrabajo {
+  id           Int          @id @default(autoincrement()) @map("id")
+  fechaInicio  DateTime     @map("fecha_inicio") @db.Date
+  fechaFin     DateTime?    @map("fecha_fin") @db.Date
+  estado       EstadoOrden  @default(ABIERTA) @map("estado")
+  empleadoCi   Int          @map("empleado_ci")
+  usuarioId    Int?         @map("usuario_id")
+  detalleId    Int?         @map("detalle_id")
+
+  empleado              Empleado                 @relation(fields: [empleadoCi], references: [ci], onUpdate: Cascade, onDelete: Restrict)
+  usuario               Usuario?                 @relation(fields: [usuarioId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  detalle               DetalleProforma?         @relation(fields: [detalleId], references: [id], onUpdate: Cascade, onDelete: Restrict)
+  comision              Comision?
+  movimientosHerramienta MovimientoHerramienta[]
+
+  @@map("orden_trabajo")
+}
+
+model Comision {
+  id          Int         @id @default(autoincrement()) @map("id")
+  ordenId     Int?        @unique @map("orden_id")
+  monto       Decimal     @map("monto") @db.Decimal(12, 2)
+  estadoPago  EstadoPago  @default(PENDIENTE) @map("estado_pago")
+  fechaPago   DateTime    @default(now()) @map("fecha_pago") @db.Date
+
+  ordenTrabajo OrdenTrabajo? @relation(fields: [ordenId], references: [id], onUpdate: Cascade, onDelete: SetNull)
+
+  @@map("comision")
+}
+
+model MarcaHerramienta {
+  id            Int            @id @default(autoincrement()) @map("ID")
+  nombre        String         @map("NOMBRE") @db.VarChar(100)
+  herramientas  Herramienta[]
+
+  @@map("MARCA_HERRAMIENTA")
+}
+
+model Herramienta {
+  id          Int      @id @default(autoincrement()) @map("ID")
+  nombre      String   @map("NOMBRE") @db.VarChar(120)
+  descripcion String?  @map("DESCRIPCION") @db.VarChar(250)
+  marcaId     Int      @map("MARCA_ID")
+
+  marca       MarcaHerramienta        @relation(fields: [marcaId], references: [id], onUpdate: Cascade, onDelete: Restrict)
+  movimientos MovimientoHerramienta[]
+
+  @@map("HERRAMIENTA")
+}
+
+model MovimientoHerramienta {
+  herramientaId   Int      @map("HERRAMIENTA_ID")
+  ordenTrabajoId  Int      @map("ORDEN_TRABAJO_ID")
+  fecha           DateTime @map("FECHA") @db.Date
+  cantidad        Int      @map("CANTIDAD")
+
+  herramienta  Herramienta  @relation(fields: [herramientaId], references: [id], onUpdate: Cascade, onDelete: Restrict)
+  ordenTrabajo OrdenTrabajo @relation(fields: [ordenTrabajoId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+  @@id([ordenTrabajoId, herramientaId])
+  @@map("MOVIMIENTO_HERRAMIENTA")
+}
+
+model Valoracion {
+  id          Int      @id @default(autoincrement()) @map("ID")
+  nombre      String?  @map("NOMBRE") @db.VarChar(100)
+  correo      String?  @map("CORREO") @db.VarChar(100)
+  calificacion Int     @map("CALIFICACION")
+  comentario  String?  @map("COMENTARIO") @db.Text
+  fecha       DateTime @default(now()) @map("FECHA")
+  ipCliente   String   @map("IP_CLIENTE") @db.VarChar(45)
+
+  @@map("VALORACION")
+}
