@@ -23,6 +23,7 @@ import {
   VStack,
 } from '@chakra-ui/react'
 import { EditIcon, DeleteIcon, AddIcon, SearchIcon, InfoIcon } from "@chakra-ui/icons";
+import { FaWhatsapp } from 'react-icons/fa';
 import OrdenTrabajoModal from "../../components/OrdenTrabajoModal";
 import DeleteConfirmDialog from "../../components/DeleteConfirmDialog";
 import { API_URL } from "../../config";
@@ -240,6 +241,47 @@ function GestionOrdenesTrabajo() {
     }
   }
 
+  const handleNotificarWhatsApp = (orden) => {
+    const cliente = orden.detalle?.proforma?.cliente
+    const moto = orden.detalle?.proforma?.diagnostico?.moto
+    
+    if (!cliente || !cliente.telefono) {
+      toast({
+        title: 'Error',
+        description: 'El cliente no tiene teléfono registrado',
+        status: 'error',
+        duration: 3000,
+      })
+      return
+    }
+
+    // Limpiar el número (quitar espacios, guiones, etc)
+    let telefono = cliente.telefono.replace(/\D/g, '')
+    
+    // Si no tiene código de país, agregar 591 (Bolivia)
+    if (!telefono.startsWith('591') && telefono.length === 8) {
+      telefono = '591' + telefono
+    }
+
+    const mensaje = `¡Hola ${cliente.nombre}! 👋
+
+Su motocicleta *${moto?.modelo || 'N/A'}* (Placa: ${moto?.placa || 'N/A'}) está lista para ser retirada del taller. ✅
+
+*Orden de Trabajo:* #${orden.id}
+*Mecánico:* ${orden.empleado?.nombre} ${orden.empleado?.apellidos}
+*Fecha:* ${formatDate(orden.fechaFin)}
+
+Por favor, acérquese a nuestro taller en horario de atención.
+
+¡Gracias por confiar en nosotros! 🏍️`
+
+    const mensajeCodificado = encodeURIComponent(mensaje)
+    const urlWhatsApp = `https://wa.me/${telefono}?text=${mensajeCodificado}`
+    
+    // Abrir WhatsApp en nueva pestaña
+    window.open(urlWhatsApp, '_blank')
+  }
+
   const filteredOrdenes = Array.isArray(ordenes) ? ordenes.filter(orden => {
     const matchesSearch = 
       orden.id.toString().includes(searchTerm) ||
@@ -438,6 +480,18 @@ function GestionOrdenesTrabajo() {
                   </Td>
                   <Td>
                     <HStack spacing={2}>
+                      {orden.estado === 'FINALIZADA' && (
+                        <Tooltip label="Notificar por WhatsApp" placement="top">
+                          <IconButton
+                            icon={<FaWhatsapp />}
+                            size="sm"
+                            colorScheme="green"
+                            variant="ghost"
+                            onClick={() => handleNotificarWhatsApp(orden)}
+                            aria-label="Notificar WhatsApp"
+                          />
+                        </Tooltip>
+                      )}
                       <IconButton
                         icon={<EditIcon />}
                         size="sm"

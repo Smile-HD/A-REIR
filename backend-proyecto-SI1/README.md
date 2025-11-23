@@ -19,29 +19,52 @@ Backend API REST con Node.js, Express, Prisma y PostgreSQL.
 
 ## ⚙️ Instalación
 
-1. Instalar dependencias:
+### 1. Instalar PostgreSQL
+Si no tienes PostgreSQL instalado:
+- Descarga desde: https://www.postgresql.org/download/
+- Durante la instalación, anota la contraseña del usuario `postgres`
+
+### 2. Crear la Base de Datos
+Abre **pgAdmin** o **psql** y ejecuta:
+```sql
+CREATE DATABASE taller;
+```
+
+O desde la terminal (cmd/PowerShell):
+```bash
+psql -U postgres
+CREATE DATABASE taller;
+\q
+```
+
+### 3. Instalar Dependencias
 ```bash
 npm install
 ```
 
-2. Configurar variables de entorno:
-   - Copiar el archivo `.env` y configurar tu conexión a PostgreSQL
-   - Actualizar `DATABASE_URL` con tus credenciales
-
-3. Crear la base de datos en PostgreSQL:
-```sql
-CREATE DATABASE proyecto_si1;
-```
-
-4. Ejecutar migraciones de Prisma:
+### 4. Configurar Variables de Entorno
 ```bash
-npx prisma migrate dev --name init
+# Copiar el archivo de ejemplo
+copy .env.example .env
+
+# Editar .env y cambiar:
+# - tu_contraseña por la contraseña de PostgreSQL
+# - Generar un JWT_SECRET único
 ```
 
-5. Generar el cliente de Prisma:
+### 5. Aplicar Migraciones (Crear Tablas)
 ```bash
-npm run prisma:generate
+npx prisma migrate deploy
 ```
+
+Esto creará automáticamente todas las tablas necesarias en la base de datos.
+
+### 6. (Opcional) Cargar Datos de Prueba
+```bash
+npm run seed
+```
+
+Esto creará usuarios, roles y permisos iniciales.
 
 ## 🏃‍♂️ Ejecutar el proyecto
 
