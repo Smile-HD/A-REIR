@@ -42,6 +42,7 @@ function Login() {
       const data = await response.json()
 
       if (response.ok) {
+        // Guardar datos en localStorage
         localStorage.setItem('isAuthenticated', 'true')
         localStorage.setItem('userEmail', email)
         localStorage.setItem('token', data.token)
@@ -51,11 +52,17 @@ function Login() {
           title: 'Inicio de sesión exitoso',
           description: 'Bienvenido de nuevo',
           status: 'success',
-          duration: 3000,
+          duration: 2000,
           isClosable: true,
         })
-        navigate('/dashboard')
+
+        // Esperar un momento para asegurar que localStorage se guarde
+        // y luego navegar al dashboard
+        setTimeout(() => {
+          window.location.href = '/dashboard'
+        }, 100)
       } else {
+        setIsLoading(false)
         toast({
           title: 'Error',
           description: data.error || 'Credenciales inválidas',
@@ -65,6 +72,7 @@ function Login() {
         })
       }
     } catch (error) {
+      setIsLoading(false)
       toast({
         title: 'Error',
         description: 'No se pudo conectar con el servidor',
@@ -73,8 +81,6 @@ function Login() {
         isClosable: true,
       })
     }
-    
-    setIsLoading(false)
   }
 
   return (

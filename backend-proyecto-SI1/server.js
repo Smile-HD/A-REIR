@@ -22,6 +22,7 @@ import bitacoraRoutes from './routes/bitacora.routes.js';
 import meRoutes from './routes/me.routes.js';
 import reporteRoutes from './routes/reporte.routes.js';
 import valoracionRoutes from './routes/valoracion.routes.js';
+import facturaRoutes from './routes/factura.routes.js';
 
 dotenv.config();
 
@@ -30,6 +31,7 @@ const PORT = process.env.PORT || 3000;
 
 // Configurar Express para confiar en proxies (importante para obtener IP real)
 app.set('trust proxy', true);
+
 
 // Middlewares
 app.use(cors());
@@ -71,6 +73,7 @@ app.use('/api/bitacora', bitacoraRoutes);
 app.use('/api/me', meRoutes);
 app.use('/api/reportes', reporteRoutes);
 app.use('/api/valoraciones', valoracionRoutes);
+app.use('/api/facturas', facturaRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

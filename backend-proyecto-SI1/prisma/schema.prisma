@@ -155,6 +155,7 @@ model Cliente {
   telefono  String     @map("TELEFONO")
   direccion String     @map("DIRECCION")
   proformas Proforma[]
+  facturas  Factura[]
 
   @@map("CLIENTE")
 }
@@ -188,6 +189,7 @@ model Proforma {
   diagnostico    Diagnostico?        @relation(fields: [diagnosticoId], references: [nro], onUpdate: Cascade, onDelete: SetNull)
   detalles       DetalleProforma[]
   repuestos      ProformaRepuesto[]
+  facturas       Factura[]
 
   @@map("PROFORMA")
 }
@@ -311,4 +313,25 @@ model Valoracion {
   ipCliente   String   @map("IP_CLIENTE") @db.VarChar(45)
 
   @@map("VALORACION")
+}
+
+enum EstadoFactura {
+  EMITIDA
+  ANULADA
+
+  @@map("estado_factura")
+}
+
+model Factura {
+  nro          BigInt         @id @default(autoincrement()) @map("NRO")
+  fecha        DateTime       @default(now()) @map("FECHA") @db.Timestamp()
+  total        Decimal        @map("TOTAL") @db.Decimal(12, 2)
+  estado       EstadoFactura  @default(EMITIDA) @map("ESTADO")
+  clienteCi    Int            @map("CLIENTE_CI")
+  proformaId   BigInt?        @map("PROFORMA_ID")
+
+  cliente   Cliente   @relation(fields: [clienteCi], references: [ci], onUpdate: Cascade, onDelete: Restrict)
+  proforma  Proforma? @relation(fields: [proformaId], references: [id], onUpdate: Cascade, onDelete: SetNull)
+
+  @@map("FACTURA")
 }

@@ -33,6 +33,7 @@ import GestionDiagnosticos from './Pedido/GestionDiagnosticos'
 import GestionClientes from './Administracion/GestionClientes'
 import GestionServicios from './Pedido/GestionServicios'
 import GestionProformas from './Pedido/GestionProformas'
+import GestionFacturas from './Pedido/GestionFacturas'
 import GestionHorarios from './Produccion/GestionHorarios'
 import GestionOrdenesTrabajo from './Produccion/GestionOrdenesTrabajo'
 import GestionComisiones from './Produccion/GestionComisiones'
@@ -313,6 +314,10 @@ function Dashboard() {
 
           {activeMenu === 'valoraciones' && (
             <GestionValoraciones />
+          )}
+
+          {activeMenu === 'facturas' && (
+            <GestionFacturas />
           )}
 
           {activeMenu === 'documentos' && (

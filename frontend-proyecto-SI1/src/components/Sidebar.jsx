@@ -8,7 +8,7 @@ import {
   InfoIcon,
   CheckCircleIcon
 } from '@chakra-ui/icons'
-import { FaUserTie, FaMotorcycle, FaClipboardList, FaUsers, FaTools, FaFileInvoiceDollar, FaClock, FaClipboardCheck, FaMoneyBillWave, FaTag, FaWrench, FaExchangeAlt, FaHistory, FaStar } from 'react-icons/fa'
+import { FaUserTie, FaMotorcycle, FaClipboardList, FaUsers, FaTools, FaFileInvoiceDollar, FaClock, FaClipboardCheck, FaMoneyBillWave, FaTag, FaWrench, FaExchangeAlt, FaHistory, FaStar, FaFileInvoice } from 'react-icons/fa'
 import { usePermissions } from '../contexts/PermissionContext'
 
 function Sidebar({ userEmail, onMenuClick, activeMenu = 'dashboard', isOpen, onClose }) {
@@ -38,7 +38,8 @@ function Sidebar({ userEmail, onMenuClick, activeMenu = 'dashboard', isOpen, onC
         { id: 'motos', label: 'Motos', icon: FaMotorcycle, module: 'motos' },
         { id: 'diagnosticos', label: 'Diagnósticos', icon: FaClipboardList, module: 'diagnosticos' },
         { id: 'servicios', label: 'Servicios', icon: FaTools, module: 'servicios' },
-        { id: 'proformas', label: 'Proformas', icon: FaFileInvoiceDollar, module: 'proformas' }
+        { id: 'proformas', label: 'Proformas', icon: FaFileInvoiceDollar, module: 'proformas' },
+        { id: 'facturas', label: 'Facturas', icon: FaFileInvoice, module: 'facturas' }
       ]
     },
     produccion: {
